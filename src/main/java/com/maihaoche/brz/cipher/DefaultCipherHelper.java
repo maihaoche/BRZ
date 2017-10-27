@@ -86,9 +86,9 @@ public class DefaultCipherHelper implements CipherHelper {
 
     public boolean verify(byte[] data, byte[] signature) {
         try {
-            PrivateKey platformPublicKey = createPrivateKey(this.platformPublicKey);
+            PublicKey platformPublicKey = createPublicKey(this.platformPublicKey);
             Signature instance = Signature.getInstance(SIGN_ALGORITHMS);
-            instance.initSign(platformPublicKey);
+            instance.initVerify(platformPublicKey);
             instance.update(data);
             return instance.verify(data);
         } catch (NoSuchAlgorithmException e) {
