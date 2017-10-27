@@ -5,6 +5,7 @@ import com.maihaoche.brz.cipher.DefaultCipherHelper;
 import com.maihaoche.brz.coder.DefaultJsonHelper;
 import com.maihaoche.brz.coder.JsonHelper;
 import com.maihaoche.brz.command.AbstractCommand;
+import com.maihaoche.brz.result.DownloadFile;
 import com.maihaoche.brz.utils.Config;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
@@ -19,7 +20,9 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.UUID;
 
 /**
@@ -44,25 +47,20 @@ public class DefaultHttpClient implements HttpClient {
         this.jsonHelper = jsonHelper;
     }
 
+    public DownloadFile download(String url, AbstractCommand command, String accessToken) throws IOException {
+        HttpResponse response = get(url, command, accessToken);
+        String fileName = URLDecoder.decode(response.getFirstHeader("Content-Disposition").getValue(), Config.ENCODING);
+        InputStream content = response.getEntity().getContent();
+        return new DownloadFile(fileName, content);
+    }
+
     public <T> T get(String url, AbstractCommand command, Class<T> returnType) throws IOException {
         return get(url, command, returnType, StringUtils.EMPTY);
     }
 
     public <T> T get(String url, AbstractCommand command, Class<T> returnType, String accessToken) throws IOException {
-        String ciphertext = encrypt(command);
-        String nonce = UUID.randomUUID().toString();
 
-        String queryString = String.format("ct=%s&nonce=%s", ciphertext, nonce);
-        String signed = sign(queryString);
-
-        HttpGet httpGet = new HttpGet(url + "?" + queryString);
-        httpGet.addHeader(SIGNATURE, signed);
-        if (StringUtils.isNotBlank(accessToken)) {
-            httpGet.addHeader(ACCESS_TOKEN, accessToken);
-        }
-
-        CloseableHttpClient client = HttpClients.createDefault();
-        CloseableHttpResponse response = client.execute(httpGet);
+        HttpResponse response = get(url, command, accessToken);
 
         ResponseBody responseBody = analyzeResponse(response);
         if (responseBody.success()) {
@@ -72,6 +70,25 @@ public class DefaultHttpClient implements HttpClient {
         } else {
             throw new RuntimeException(String.format("返回值错误,错误码:%s,原因:%s", responseBody.getCode(), responseBody.getMessage()));
         }
+    }
+
+    private HttpResponse get(String url, AbstractCommand command, String accessToken) throws IOException {
+        String ciphertext = encrypt(command);
+        String nonce = UUID.randomUUID().toString();
+
+        String queryString = String.format("ct=%s&nonce=%s", ciphertext, nonce);
+        String signed = sign(queryString);
+
+        HttpGet httpGet = new HttpGet(String.format("%s?%s", url, queryString));
+        httpGet.addHeader(SIGNATURE, signed);
+        if (StringUtils.isNotBlank(accessToken)) {
+            httpGet.addHeader(ACCESS_TOKEN, accessToken);
+        }
+
+        CloseableHttpClient client = HttpClients.createDefault();
+        CloseableHttpResponse response = client.execute(httpGet);
+
+        return response;
     }
 
     public void post(String url, AbstractCommand command, String accessToken) throws IOException {

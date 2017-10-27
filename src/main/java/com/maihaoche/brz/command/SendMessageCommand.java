@@ -10,10 +10,10 @@ public class SendMessageCommand extends AbstractCommand {
     private final Long timestamp = System.currentTimeMillis();
     private final String eventId;
     private final String eventType;
-    private final List<Long> payload;
+    private final List<String> payload;
 
 
-    public SendMessageCommand(  String eventId, String eventType, List<Long> payload) {
+    public SendMessageCommand(String eventId, String eventType, List<String> payload) {
         this.eventId = eventId;
         this.eventType = eventType;
         this.payload = payload;
@@ -31,7 +31,7 @@ public class SendMessageCommand extends AbstractCommand {
         return eventType;
     }
 
-    public List<Long> getPayload() {
+    public List<String> getPayload() {
         return payload;
     }
 }
