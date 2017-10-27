@@ -1,33 +1,23 @@
 package com.maihaoche.brz.network;
 
+import java.util.UUID;
+
 /**
- * Created by alex on 2017/10/24.
+ * Created by alex on 2017/10/26.
  */
 public class RequestBody {
-    private String ct;
-    private String r;
+    private final String ct;
+    private final String nonce = UUID.randomUUID().toString();
 
-    public RequestBody() {
-    }
-
-    public RequestBody(String ct, String r) {
+    public RequestBody(String ct) {
         this.ct = ct;
-        this.r = r;
     }
 
     public String getCt() {
         return ct;
     }
 
-    public void setCt(String ct) {
-        this.ct = ct;
-    }
-
-    public String getR() {
-        return r;
-    }
-
-    public void setR(String r) {
-        this.r = r;
+    public String getNonce() {
+        return nonce;
     }
 }

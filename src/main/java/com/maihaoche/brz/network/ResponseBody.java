@@ -1,18 +1,42 @@
 package com.maihaoche.brz.network;
 
+import com.maihaoche.brz.utils.ErrorCode;
+
 /**
  * Created by alex on 2017/10/24.
  */
 public class ResponseBody {
+    private String code;
+    private String message;
+    private String nonce;
     private String ct;
-    private String r;
 
     public ResponseBody() {
     }
 
-    public ResponseBody(String ct, String r) {
-        this.ct = ct;
-        this.r = r;
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public String getNonce() {
+        return nonce;
+    }
+
+    public void setNonce(String nonce) {
+        this.nonce = nonce;
     }
 
     public String getCt() {
@@ -23,11 +47,11 @@ public class ResponseBody {
         this.ct = ct;
     }
 
-    public String getR() {
-        return r;
+    public Boolean success() {
+        return ErrorCode.SUCCESS.getCode().equals(this.code);
     }
 
-    public void setR(String r) {
-        this.r = r;
+    public Boolean fail() {
+        return !ErrorCode.SUCCESS.getCode().equals(this.code);
     }
 }
