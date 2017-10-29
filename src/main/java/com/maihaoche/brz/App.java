@@ -1,10 +1,13 @@
 package com.maihaoche.brz;
 
+import com.maihaoche.brz.cipher.CipherHelper;
 import com.maihaoche.brz.cipher.DefaultCipherHelper;
 import com.maihaoche.brz.coder.DefaultJsonHelper;
+import com.maihaoche.brz.command.DownloadContractCommand;
+import com.maihaoche.brz.command.RequestAccessTokenCommand;
+import com.maihaoche.brz.command.SendMessageCommand;
 import com.maihaoche.brz.network.DefaultHttpClient;
 import com.maihaoche.brz.network.HttpClient;
-import com.maihaoche.brz.command.*;
 import com.maihaoche.brz.result.AccessToken;
 import com.maihaoche.brz.result.DownloadFile;
 import com.maihaoche.brz.utils.Config;

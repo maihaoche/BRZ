@@ -6,11 +6,17 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import java.nio.ByteBuffer;
 import java.security.*;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
+import java.security.spec.KeySpec;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by alex on 2017/10/22.
@@ -18,23 +24,37 @@ import java.security.spec.PKCS8EncodedKeySpec;
 public class DefaultCipherHelper implements CipherHelper {
 
     private final String ALGORITHM = "RSA";
-    private final String SIGN_ALGORITHMS = "SHA256WithRSA";
+    private final String CIPHER_ALGORITHM = "RSA/ECB/PKCS1Padding";
+    private final String SIGN_ALGORITHMS = "SHA1WithRSA";
 
-    private final String platformPublicKey;
-    private final String corpPrivateKey;
+    private final String publicKey;
+    private final String privateKey;
 
-    public DefaultCipherHelper(String platformPublicKey, String corpPrivateKey) {
-        this.platformPublicKey = platformPublicKey;
-        this.corpPrivateKey = corpPrivateKey;
+    public DefaultCipherHelper(String publicKey, String privateKey) {
+        this.publicKey = publicKey;
+        this.privateKey = privateKey;
     }
 
     public byte[] encrypt(byte[] plaintext) {
         try {
             // 使用默认RSA
-            RSAPublicKey platformPublicKey = createPublicKey(this.platformPublicKey);
-            Cipher cipher = Cipher.getInstance("RSA/CBC/PKCS5Padding");
-            cipher.init(Cipher.ENCRYPT_MODE, platformPublicKey);
-            return cipher.doFinal(plaintext);
+            RSAPublicKey publicKey = createPublicKey(this.publicKey);
+            Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
+            cipher.init(Cipher.ENCRYPT_MODE, publicKey);
+
+            int bitLengthOfPuk = publicKey.getModulus().bitLength() / 8;
+            int blockSize = bitLengthOfPuk - 11;
+            if (plaintext.length > blockSize) {
+                List<byte[]> blocks = block(plaintext, blockSize);
+                ByteBuffer buffer = ByteBuffer.allocate(blocks.size() * bitLengthOfPuk);
+                for (byte[] block : blocks) {
+                    buffer.put(cipher.doFinal(block));
+                }
+                return buffer.array();
+            } else {
+                return cipher.doFinal(plaintext);
+            }
+
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("无此加密算法");
         } catch (NoSuchPaddingException e) {
@@ -51,10 +71,25 @@ public class DefaultCipherHelper implements CipherHelper {
     public byte[] decrypt(byte[] ciphertext) {
         try {
             // 使用默认RSA
-            RSAPrivateKey corpPrivateKey = createPrivateKey(this.corpPrivateKey);
-            Cipher cipher = Cipher.getInstance("RSA/CBC/PKCS5Padding");
-            cipher.init(Cipher.DECRYPT_MODE, corpPrivateKey);
-            return cipher.doFinal(ciphertext);
+            RSAPrivateKey privateKey = createPrivateKey(this.privateKey);
+            Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
+            cipher.init(Cipher.DECRYPT_MODE, privateKey);
+
+            int blockSize = privateKey.getModulus().bitLength() / 8;
+            if (ciphertext.length > blockSize) {
+                List<byte[]> blocks = block(ciphertext, blockSize);
+                ByteBuffer buffer = ByteBuffer.allocate(blocks.size() * blockSize);
+                for (byte[] block : blocks) {
+                    buffer.put(cipher.doFinal(block));
+                }
+
+                buffer.flip();
+                byte[] result = new byte[buffer.limit()];
+                buffer.get(result);
+                return result;
+            } else {
+                return cipher.doFinal(ciphertext);
+            }
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("无此加密算法");
         } catch (NoSuchPaddingException e) {
@@ -68,11 +103,31 @@ public class DefaultCipherHelper implements CipherHelper {
         }
     }
 
+    private List<byte[]> block(byte[] src, int blockSize) {
+        int group;
+        if (src.length % blockSize == 0) {
+            group = src.length / blockSize;
+        } else {
+            group = src.length / blockSize + 1;
+        }
+
+        List<byte[]> blocks = new ArrayList<byte[]>();
+        for (int i = 0; i < group; i++) {
+            int from = i * blockSize;
+            int to = Math.min(src.length, (i + 1) * blockSize);
+
+            byte[] block = Arrays.copyOfRange(src, from, to);
+
+            blocks.add(block);
+        }
+        return blocks;
+    }
+
     public byte[] sign(byte[] data) {
         try {
-            PrivateKey corpPrivateKey = createPrivateKey(this.corpPrivateKey);
+            PrivateKey privateKey = createPrivateKey(this.privateKey);
             Signature signature = Signature.getInstance(SIGN_ALGORITHMS);
-            signature.initSign(corpPrivateKey);
+            signature.initSign(privateKey);
             signature.update(data);
             return signature.sign();
         } catch (NoSuchAlgorithmException e) {
@@ -86,11 +141,11 @@ public class DefaultCipherHelper implements CipherHelper {
 
     public boolean verify(byte[] data, byte[] signature) {
         try {
-            PublicKey platformPublicKey = createPublicKey(this.platformPublicKey);
+            PublicKey publicKey = createPublicKey(this.publicKey);
             Signature instance = Signature.getInstance(SIGN_ALGORITHMS);
-            instance.initVerify(platformPublicKey);
+            instance.initVerify(publicKey);
             instance.update(data);
-            return instance.verify(data);
+            return instance.verify(signature);
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("无此加密算法");
         } catch (InvalidKeyException e) {
@@ -105,7 +160,7 @@ public class DefaultCipherHelper implements CipherHelper {
         try {
             byte[] buffer = Base64.decodeBase64(puk);
             KeyFactory keyFactory = KeyFactory.getInstance(ALGORITHM);
-            PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(buffer);
+            KeySpec keySpec = new X509EncodedKeySpec(buffer);
             return (RSAPublicKey) keyFactory.generatePublic(keySpec);
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("无此算法");
@@ -119,7 +174,7 @@ public class DefaultCipherHelper implements CipherHelper {
     private RSAPrivateKey createPrivateKey(String prk) {
         try {
             byte[] buffer = Base64.decodeBase64(prk);
-            PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(buffer);
+            KeySpec keySpec = new PKCS8EncodedKeySpec(buffer);
             KeyFactory keyFactory = KeyFactory.getInstance(ALGORITHM);
             return (RSAPrivateKey) keyFactory.generatePrivate(keySpec);
         } catch (NoSuchAlgorithmException e) {

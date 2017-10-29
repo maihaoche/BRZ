@@ -15,7 +15,7 @@ public class Config {
 
     public final static String CORP_KEY = "合作方KEY";
 
-    public final static String CORP_PRIVATE_KEY = "合作方私钥";
+    public final static String CORP_PRIVATE_KEY = "";
 
-    public final static String PLATFORM_PUBLIC_KEY = "卖好车公钥";
+    public final static String PLATFORM_PUBLIC_KEY = "";
 }
