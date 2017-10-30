@@ -3,7 +3,6 @@ package com.maihaoche.brz;
 import com.maihaoche.brz.cipher.DefaultCipherHelper;
 import com.maihaoche.brz.coder.DefaultJsonHelper;
 import com.maihaoche.brz.command.DownloadContractCommand;
-import com.maihaoche.brz.command.RequestAccessTokenCommand;
 import com.maihaoche.brz.command.SendMessageCommand;
 import com.maihaoche.brz.network.DefaultHttpClient;
 import com.maihaoche.brz.network.HttpClient;
@@ -13,6 +12,8 @@ import com.maihaoche.brz.utils.Config;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.Collections;
+import java.util.UUID;
 
 /**
  * 卖好车开放平台，例子
@@ -29,9 +30,9 @@ public class App {
             //例子1，获取access token
             AccessToken accessToken = requestAccessToken(Config.CORP_ID, Config.CORP_KEY);
 
-//            //例子2、放款通知卖好车
-//            notify(accessToken.getToken(), new SendMessageCommand(UUID.randomUUID().toString(), "lent", Collections.<String>emptyList()));
-//
+            //例子2、放款通知卖好车
+            notify(accessToken.getToken(), new SendMessageCommand(UUID.randomUUID().toString(), "lent", Collections.<String>emptyList()));
+
 //            //例子3、还款通知卖好车
 //            notify(accessToken.getToken(), new SendMessageCommand(UUID.randomUUID().toString(), "repaid", Collections.<String>emptyList()));
 //
@@ -44,8 +45,7 @@ public class App {
     }
 
     private static AccessToken requestAccessToken(String corpId, String corpKey) throws IOException {
-        RequestAccessTokenCommand requestAccessTokenCommand = new RequestAccessTokenCommand(corpId, corpKey);
-        String requestAccessTokenUrl = String.format("%s/v1/corp/token?id=%s&key=%s", Config.DOMAIN, Config.CORP_ID, Config.CORP_KEY);
+        String requestAccessTokenUrl = String.format("%s/v1/corp/token?id=%s&key=%s", Config.DOMAIN, corpId, corpKey);
         AccessToken accessToken = HTTP_CLIENT.get(requestAccessTokenUrl, AccessToken.class);
         return accessToken;
     }
