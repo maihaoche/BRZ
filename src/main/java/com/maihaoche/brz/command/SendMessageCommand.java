@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * Created by alex on 2017/10/26.
  */
-public class SendMessageCommand extends AbstractCommand {
+public class SendMessageCommand   {
 
     private final Long timestamp = System.currentTimeMillis();
     private final String eventId;

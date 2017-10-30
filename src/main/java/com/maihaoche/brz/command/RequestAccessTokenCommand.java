@@ -3,7 +3,7 @@ package com.maihaoche.brz.command;
 /**
  * Created by alex on 2017/10/22.
  */
-public class RequestAccessTokenCommand extends AbstractCommand {
+public class RequestAccessTokenCommand {
     private final String corpId;
     private final String corpKey;
 

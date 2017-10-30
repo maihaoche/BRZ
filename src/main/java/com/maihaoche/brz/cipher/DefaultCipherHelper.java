@@ -40,6 +40,7 @@ public class DefaultCipherHelper implements CipherHelper {
             // 使用默认RSA
             RSAPublicKey publicKey = createPublicKey(this.publicKey);
             Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
+
             cipher.init(Cipher.ENCRYPT_MODE, publicKey);
 
             int bitLengthOfPuk = publicKey.getModulus().bitLength() / 8;
@@ -73,6 +74,7 @@ public class DefaultCipherHelper implements CipherHelper {
             // 使用默认RSA
             RSAPrivateKey privateKey = createPrivateKey(this.privateKey);
             Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
+
             cipher.init(Cipher.DECRYPT_MODE, privateKey);
 
             int blockSize = privateKey.getModulus().bitLength() / 8;
@@ -103,32 +105,16 @@ public class DefaultCipherHelper implements CipherHelper {
         }
     }
 
-    private List<byte[]> block(byte[] src, int blockSize) {
-        int group;
-        if (src.length % blockSize == 0) {
-            group = src.length / blockSize;
-        } else {
-            group = src.length / blockSize + 1;
-        }
 
-        List<byte[]> blocks = new ArrayList<byte[]>();
-        for (int i = 0; i < group; i++) {
-            int from = i * blockSize;
-            int to = Math.min(src.length, (i + 1) * blockSize);
-
-            byte[] block = Arrays.copyOfRange(src, from, to);
-
-            blocks.add(block);
-        }
-        return blocks;
-    }
-
-    public byte[] sign(byte[] data) {
+    public byte[] sign(byte[] data, byte[] nonce) {
         try {
             PrivateKey privateKey = createPrivateKey(this.privateKey);
             Signature signature = Signature.getInstance(SIGN_ALGORITHMS);
             signature.initSign(privateKey);
-            signature.update(data);
+
+            byte[] withSalt = concat(data, nonce);
+
+            signature.update(withSalt);
             return signature.sign();
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("无此加密算法");
@@ -139,12 +125,13 @@ public class DefaultCipherHelper implements CipherHelper {
         }
     }
 
-    public boolean verify(byte[] data, byte[] signature) {
+    public boolean verify(byte[] data, byte[] nonce, byte[] signature) {
         try {
             PublicKey publicKey = createPublicKey(this.publicKey);
             Signature instance = Signature.getInstance(SIGN_ALGORITHMS);
             instance.initVerify(publicKey);
-            instance.update(data);
+            byte[] withSalt = concat(data, nonce);
+            instance.update(withSalt);
             return instance.verify(signature);
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("无此加密算法");
@@ -185,4 +172,32 @@ public class DefaultCipherHelper implements CipherHelper {
             throw new RuntimeException("私钥数据为空");
         }
     }
+
+    private byte[] concat(byte[] b1, byte[] b2) {
+        byte[] withSalt = new byte[b1.length + b2.length];
+        System.arraycopy(b1, 0, withSalt, 0, b1.length);
+        System.arraycopy(b2, 0, withSalt, b1.length, b2.length);
+        return withSalt;
+    }
+
+    private List<byte[]> block(byte[] src, int blockSize) {
+        int group;
+        if (src.length % blockSize == 0) {
+            group = src.length / blockSize;
+        } else {
+            group = src.length / blockSize + 1;
+        }
+
+        List<byte[]> blocks = new ArrayList<byte[]>();
+        for (int i = 0; i < group; i++) {
+            int from = i * blockSize;
+            int to = Math.min(src.length, (i + 1) * blockSize);
+
+            byte[] block = Arrays.copyOfRange(src, from, to);
+
+            blocks.add(block);
+        }
+        return blocks;
+    }
+
 }

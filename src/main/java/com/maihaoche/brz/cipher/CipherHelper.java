@@ -5,11 +5,11 @@ package com.maihaoche.brz.cipher;
  */
 public interface CipherHelper {
 
-    byte[] encrypt(byte[] plaintext);
+    byte[] encrypt(byte[] plaintext );
 
-    byte[] decrypt(byte[] ciphertext);
+    byte[] decrypt(byte[] ciphertext );
 
-    byte[] sign(byte[] data);
+    byte[] sign(byte[] data, byte[] nonce);
 
-    boolean verify(byte[] data, byte[] signature);
+    boolean verify(byte[] data, byte[] nonce, byte[] signature);
 }

@@ -8,7 +8,6 @@ import com.maihaoche.brz.utils.ErrorCode;
 public class ResponseBody {
     private String code;
     private String message;
-    private String nonce;
     private String ct;
 
     public ResponseBody() {
@@ -29,14 +28,6 @@ public class ResponseBody {
 
     public void setMessage(String message) {
         this.message = message;
-    }
-
-    public String getNonce() {
-        return nonce;
-    }
-
-    public void setNonce(String nonce) {
-        this.nonce = nonce;
     }
 
     public String getCt() {
