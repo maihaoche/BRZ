@@ -8,6 +8,7 @@ import com.maihaoche.brz.result.DownloadFile;
 import com.maihaoche.brz.utils.Config;
 import com.maihaoche.brz.utils.NonceUtils;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
@@ -20,7 +21,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.Collections;
@@ -51,8 +51,16 @@ public class DefaultHttpClient implements HttpClient {
     public DownloadFile download(String url, Object command, String accessToken) throws IOException {
         HttpResponse response = get(url, command, accessToken);
         String fileName = URLDecoder.decode(response.getFirstHeader("Content-Disposition").getValue(), Config.ENCODING);
-        InputStream content = response.getEntity().getContent();
-        return new DownloadFile(fileName, content);
+        byte[] content = IOUtils.toByteArray(response.getEntity().getContent());
+
+        String signature = response.getFirstHeader(SIGNATURE).getValue();
+
+        if (DigestUtils.md5Hex(content).equals(signature)) {
+            return new DownloadFile(fileName, content);
+        } else {
+            throw new RuntimeException("文件损坏");
+        }
+
     }
 
     public <T> T get(String url, Class<T> returnType) throws IOException {
@@ -97,6 +105,7 @@ public class DefaultHttpClient implements HttpClient {
 
         HttpGet httpGet = new HttpGet(String.format("%s?%s", url, queryString));
         httpGet.addHeader(SIGNATURE, signed);
+        httpGet.addHeader(NONCE, nonce);
         if (StringUtils.isNotBlank(accessToken)) {
             httpGet.addHeader(ACCESS_TOKEN, accessToken);
         }

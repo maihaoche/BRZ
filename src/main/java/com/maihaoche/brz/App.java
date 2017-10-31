@@ -10,7 +10,9 @@ import com.maihaoche.brz.result.AccessToken;
 import com.maihaoche.brz.result.DownloadFile;
 import com.maihaoche.brz.utils.Config;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Collections;
 import java.util.UUID;
@@ -30,15 +32,20 @@ public class App {
             //例子1，获取access token
             AccessToken accessToken = requestAccessToken(Config.CORP_ID, Config.CORP_KEY);
 
-            //例子2、放款通知卖好车
+//            例子2、放款通知卖好车
             notify(accessToken.getToken(), new SendMessageCommand(UUID.randomUUID().toString(), "lent", Collections.<String>emptyList()));
 
-//            //例子3、还款通知卖好车
-//            notify(accessToken.getToken(), new SendMessageCommand(UUID.randomUUID().toString(), "repaid", Collections.<String>emptyList()));
-//
-//            //例子4、下载合同
-//            DownloadFile file = downloadContract(accessToken.getToken(), new DownloadContractCommand("1", "1"));
-//            //TODO 保存到本地/CDN
+//            例子3、还款通知卖好车
+            notify(accessToken.getToken(), new SendMessageCommand(UUID.randomUUID().toString(), "repaid", Collections.<String>emptyList()));
+
+            //例子4、下载合同
+            DownloadFile downloadFile = downloadContract(accessToken.getToken(), new DownloadContractCommand("G20170807107513", "100632980607197184"));
+
+            OutputStream outputStream = new FileOutputStream(downloadFile.getName());
+            outputStream.write(downloadFile.getContent());
+            outputStream.close();
+
+// TOD保存到本地/CDN
         } catch (IOException e) {
             e.printStackTrace();
         }
