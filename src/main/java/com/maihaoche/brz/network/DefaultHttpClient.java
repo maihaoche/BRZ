@@ -18,11 +18,17 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.ssl.TrustStrategy;
 
+import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
 
 /**
@@ -48,7 +54,7 @@ public class DefaultHttpClient implements HttpClient {
         this.jsonHelper = jsonHelper;
     }
 
-    public DownloadFile download(String url, Object command, String accessToken) throws IOException {
+    public DownloadFile download(String url, Object command, String accessToken) throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         HttpResponse response = get(url, command, accessToken);
         String fileName = URLDecoder.decode(response.getFirstHeader("Content-Disposition").getValue(), Config.ENCODING);
         byte[] content = IOUtils.toByteArray(response.getEntity().getContent());
@@ -63,9 +69,23 @@ public class DefaultHttpClient implements HttpClient {
 
     }
 
-    public <T> T get(String url, Class<T> returnType) throws IOException {
+    private CloseableHttpClient buildHttpsClient() throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
+        HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
+        SSLContext sslContext = new SSLContextBuilder().loadTrustMaterial(null, new TrustStrategy() {
+            public boolean isTrusted(java.security.cert.X509Certificate[] x509Certificates, String s) throws java.security.cert.CertificateException {
+                return true;
+            }
+        }).build();
+        httpClientBuilder.setSSLContext(sslContext);
+
+        return httpClientBuilder.build();
+    }
+
+    public <T> T get(String url, Class<T> returnType) throws IOException, KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
+
+
+        CloseableHttpClient client = buildHttpsClient();
         HttpGet httpGet = new HttpGet(url);
-        CloseableHttpClient client = HttpClients.createDefault();
         HttpResponse response = client.execute(httpGet);
 
         ResponseBody responseBody = analyzeBody(response);
@@ -81,11 +101,11 @@ public class DefaultHttpClient implements HttpClient {
         return jsonHelper.fromJson(json, returnType);
     }
 
-    public <T> T get(String url, Object command, Class<T> returnType) throws IOException {
+    public <T> T get(String url, Object command, Class<T> returnType) throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         return get(url, command, returnType, StringUtils.EMPTY);
     }
 
-    public <T> T get(String url, Object command, Class<T> returnType, String accessToken) throws IOException {
+    public <T> T get(String url, Object command, Class<T> returnType, String accessToken) throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         HttpResponse response = get(url, command, accessToken);
         ResponseBody responseBody = analyzeBody(response);
         if (responseBody.fail()) {
@@ -96,7 +116,7 @@ public class DefaultHttpClient implements HttpClient {
         return jsonHelper.fromJson(new String(pt, Config.ENCODING), returnType);
     }
 
-    private HttpResponse get(String url, Object command, String accessToken) throws IOException {
+    private HttpResponse get(String url, Object command, String accessToken) throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         String ciphertext = encrypt(command);
 
         String nonce = NonceUtils.nonce();
@@ -110,11 +130,11 @@ public class DefaultHttpClient implements HttpClient {
             httpGet.addHeader(ACCESS_TOKEN, accessToken);
         }
 
-        CloseableHttpClient client = HttpClients.createDefault();
+        CloseableHttpClient client = buildHttpsClient();
         return client.execute(httpGet);
     }
 
-    public void post(String url, Object command, String accessToken) throws IOException {
+    public void post(String url, Object command, String accessToken) throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         String ciphertext = encrypt(command);
 
         String nonce = NonceUtils.nonce();
@@ -129,7 +149,7 @@ public class DefaultHttpClient implements HttpClient {
 
         httpPost.setEntity(new ByteArrayEntity(requestBodyJSON.getBytes(Config.ENCODING)));
 
-        CloseableHttpClient client = HttpClients.createDefault();
+        CloseableHttpClient client = buildHttpsClient();
         CloseableHttpResponse response = client.execute(httpPost);
 
         ResponseBody responseBody = analyzeBody(response);

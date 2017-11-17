@@ -4,12 +4,12 @@ package com.maihaoche.brz.utils;
  * Created by alex on 2017/10/22.
  */
 public class Config {
-    public final static String DOMAIN = "";
+    public final static String DOMAIN = "https://open.haimaiche.net";
 
     /**
      * 固定值，请勿修改
      */
-    public final static String ENCODING = "UTF-8";
+    public final static String ENCODING = "";
 
     public final static String CORP_ID = "";
 

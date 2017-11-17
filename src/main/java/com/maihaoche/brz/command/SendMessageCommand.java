@@ -1,19 +1,17 @@
 package com.maihaoche.brz.command;
 
-import java.util.List;
-
 /**
  * Created by alex on 2017/10/26.
  */
-public class SendMessageCommand   {
+public class SendMessageCommand<TPayload> {
 
     private final Long timestamp = System.currentTimeMillis();
     private final String eventId;
     private final String eventType;
-    private final List<String> payload;
+    private final TPayload payload;
 
 
-    public SendMessageCommand(String eventId, String eventType, List<String> payload) {
+    public SendMessageCommand(String eventId, String eventType, TPayload payload) {
         this.eventId = eventId;
         this.eventType = eventType;
         this.payload = payload;
@@ -31,7 +29,7 @@ public class SendMessageCommand   {
         return eventType;
     }
 
-    public List<String> getPayload() {
+    public TPayload getPayload() {
         return payload;
     }
 }
