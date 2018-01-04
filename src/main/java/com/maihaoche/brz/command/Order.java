@@ -15,14 +15,14 @@ public class Order {
     private final String totalLoanAmount;
     private final String totalMatAmount;
     private final String totalEarnestAmount;
-    private final List<Contract> contract;
     private final Borrower borrower;
     private final Provider provider;
     private final Account account;
-    private final Earnest earnest;
+    private final List<Contract> contract;
+    private final List<Earnest> earnest;
     private final List<Car> cars;
 
-    public Order(String orderId, String kind, String applierName, String applierMobile, String bailAmount, String contractAmount, String totalLoanAmount, String totalMatAmount, String totalEarnestAmount, List<Contract> contract, Borrower borrower, Provider provider, Account account, Earnest earnest, List<Car> cars) {
+    public Order(String orderId, String kind, String applierName, String applierMobile, String bailAmount, String contractAmount, String totalLoanAmount, String totalMatAmount, String totalEarnestAmount, Borrower borrower, Provider provider, Account account, List<Contract> contract, List<Earnest> earnest, List<Car> cars) {
         this.orderId = orderId;
         this.kind = kind;
         this.applierName = applierName;
@@ -32,10 +32,10 @@ public class Order {
         this.totalLoanAmount = totalLoanAmount;
         this.totalMatAmount = totalMatAmount;
         this.totalEarnestAmount = totalEarnestAmount;
-        this.contract = contract;
         this.borrower = borrower;
         this.provider = provider;
         this.account = account;
+        this.contract = contract;
         this.earnest = earnest;
         this.cars = cars;
     }
@@ -76,10 +76,6 @@ public class Order {
         return totalEarnestAmount;
     }
 
-    public List<Contract> getContract() {
-        return contract;
-    }
-
     public Borrower getBorrower() {
         return borrower;
     }
@@ -92,7 +88,11 @@ public class Order {
         return account;
     }
 
-    public Earnest getEarnest() {
+    public List<Contract> getContract() {
+        return contract;
+    }
+
+    public List<Earnest> getEarnest() {
         return earnest;
     }
 
