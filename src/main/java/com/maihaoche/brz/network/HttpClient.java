@@ -3,6 +3,7 @@ package com.maihaoche.brz.network;
 import com.maihaoche.brz.result.DownloadFile;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -18,6 +19,8 @@ public interface HttpClient {
     <T> T get(String url, Object command, Class<T> returnType) throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException;
 
     <T> T get(String url, Object command, Class<T> returnType, String accessToken) throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException;
+
+    <T> T get(String url, Object command, Type returnType, String accessToken) throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException;
 
     void post(String url, Object command, String accessToken) throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException;
 }

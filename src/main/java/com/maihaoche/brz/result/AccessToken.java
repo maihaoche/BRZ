@@ -25,4 +25,12 @@ public class AccessToken {
     public void setExpire(Integer expire) {
         this.expire = expire;
     }
+
+    @Override
+    public String toString() {
+        return "AccessToken{" +
+                "token='" + token + '\'' +
+                ", expire=" + expire +
+                '}';
+    }
 }

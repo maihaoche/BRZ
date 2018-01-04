@@ -1,5 +1,6 @@
 package com.maihaoche.brz.network;
 
+import com.google.gson.reflect.TypeToken;
 import com.maihaoche.brz.cipher.CipherHelper;
 import com.maihaoche.brz.cipher.DefaultCipherHelper;
 import com.maihaoche.brz.coder.DefaultJsonHelper;
@@ -25,6 +26,7 @@ import org.apache.http.ssl.TrustStrategy;
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Type;
 import java.net.URLDecoder;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
@@ -111,10 +113,26 @@ public class DefaultHttpClient implements HttpClient {
         if (responseBody.fail()) {
             throw new RuntimeException(String.format("返回值错误,错误码:%s,原因:%s", responseBody.getCode(), responseBody.getMessage()));
         }
-        byte[] pt = cipherHelper.decrypt(responseBody.getCt().getBytes(Config.ENCODING));
+
+        byte[] ct = Base64.decodeBase64(responseBody.getCt());
+        byte[] pt = cipherHelper.decrypt(ct);
 
         return jsonHelper.fromJson(new String(pt, Config.ENCODING), returnType);
     }
+
+    public <T> T get(String url, Object command, Type returnType, String accessToken) throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+        HttpResponse response = get(url, command, accessToken);
+        ResponseBody responseBody = analyzeBody(response);
+        if (responseBody.fail()) {
+            throw new RuntimeException(String.format("返回值错误,错误码:%s,原因:%s", responseBody.getCode(), responseBody.getMessage()));
+        }
+
+        byte[] ct = Base64.decodeBase64(responseBody.getCt());
+        byte[] pt = cipherHelper.decrypt(ct);
+
+        return jsonHelper.fromJson(new String(pt, Config.ENCODING), returnType);
+    }
+
 
     private HttpResponse get(String url, Object command, String accessToken) throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         String ciphertext = encrypt(command);
