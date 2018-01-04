@@ -1,6 +1,5 @@
 package com.maihaoche.brz.network;
 
-import com.google.gson.reflect.TypeToken;
 import com.maihaoche.brz.cipher.CipherHelper;
 import com.maihaoche.brz.cipher.DefaultCipherHelper;
 import com.maihaoche.brz.coder.DefaultJsonHelper;
