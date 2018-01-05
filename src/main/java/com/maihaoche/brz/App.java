@@ -4,10 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.maihaoche.brz.cipher.DefaultCipherHelper;
 import com.maihaoche.brz.coder.DefaultJsonHelper;
-import com.maihaoche.brz.command.AlterSignerCommand;
-import com.maihaoche.brz.command.DownloadContractCommand;
-import com.maihaoche.brz.command.Order;
-import com.maihaoche.brz.command.SendMessageCommand;
+import com.maihaoche.brz.command.*;
 import com.maihaoche.brz.network.DefaultHttpClient;
 import com.maihaoche.brz.network.HttpClient;
 import com.maihaoche.brz.result.AccessToken;
@@ -16,6 +13,7 @@ import com.maihaoche.brz.utils.Config;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -43,8 +41,14 @@ public class App {
             System.out.println(accessToken);
 
 
-//            List<Order> orders = findOrder(accessToken.getToken(), "G20180104106309");
-//            System.out.println(gson.toJson(orders));
+            List<Order> orders = findOrder(accessToken.getToken(), "G20180104106309");
+            System.out.println(gson.toJson(orders));
+
+            for (Contract contract : orders.get(0).getContract()) {
+                Map<String, String> uris = findContractUri(accessToken.getToken(), contract.getId(), contract.getMime());
+                System.out.println(URLDecoder.decode(uris.get("uri"), "UTF-8"));
+            }
+
 //
 //            List<String> carIds = Collections.singletonList("100571421");
 //            List<Map<String, String>> waybill = findWaybill(accessToken.getToken(), carIds);
@@ -70,9 +74,10 @@ public class App {
 //            outputStream.close();
 
 //            修改签章人
-            alterSigner(accessToken.getToken(), "重楼", "18058182593");
+//            alterSigner(accessToken.getToken(), "重楼", "18058182593");
+//
+//            sendCaptcha(accessToken.getToken());
 
-            sendCaptcha(accessToken.getToken());
 
         } catch (Throwable e) {
             e.printStackTrace();
@@ -131,5 +136,19 @@ public class App {
     private static void reject(String accessToken, String orderId) throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         String notifyUrl = String.format("%s/v1/reject", Config.DOMAIN);
         HTTP_CLIENT.put(notifyUrl, orderId, accessToken);
+    }
+
+    private static Map<String, String> findContractUri(String accessToken, String contractId, String mime) throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+        String notifyUrl = String.format("%s/v1/contract/uri", Config.DOMAIN);
+
+        Map<String, String> uri = HTTP_CLIENT.get(notifyUrl, new FindContractUriCommand(contractId, mime), new TypeToken<Map<String, String>>() {
+        }.getType(), accessToken);
+
+        return uri;
+    }
+
+    private static void sign(String accessToken, String contractId, String captcha) throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+        String notifyUrl = String.format("%s/v1/sign", Config.DOMAIN);
+        HTTP_CLIENT.post(notifyUrl, new SignCommand(contractId, captcha), accessToken);
     }
 }
