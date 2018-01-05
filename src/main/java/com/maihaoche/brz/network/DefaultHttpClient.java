@@ -16,6 +16,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -102,6 +103,20 @@ public class DefaultHttpClient implements HttpClient {
         return jsonHelper.fromJson(json, returnType);
     }
 
+    public void get(String url, String accessToken) throws IOException, KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
+
+        CloseableHttpClient client = buildHttpsClient();
+        HttpGet httpGet = new HttpGet(url);
+        httpGet.addHeader(ACCESS_TOKEN, accessToken);
+
+        HttpResponse response = client.execute(httpGet);
+
+        ResponseBody responseBody = analyzeBody(response);
+        if (responseBody.fail()) {
+            throw new RuntimeException(String.format("返回值错误,错误码:%s,原因:%s", responseBody.getCode(), responseBody.getMessage()));
+        }
+    }
+
     public <T> T get(String url, Object command, Class<T> returnType) throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         return get(url, command, returnType, StringUtils.EMPTY);
     }
@@ -167,6 +182,30 @@ public class DefaultHttpClient implements HttpClient {
 
         CloseableHttpClient client = buildHttpsClient();
         CloseableHttpResponse response = client.execute(httpPost);
+
+        ResponseBody responseBody = analyzeBody(response);
+        if (responseBody.fail()) {
+            throw new RuntimeException(String.format("返回值错误,错误码:%s,原因:%s", responseBody.getCode(), responseBody.getMessage()));
+        }
+    }
+
+    public void put(String url, Object command, String accessToken) throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+        String ciphertext = encrypt(command);
+
+        String nonce = NonceUtils.nonce();
+        String requestBodyJSON = jsonHelper.toJson(Collections.singletonMap("ct", ciphertext));
+        String signed = sign(requestBodyJSON, nonce);
+
+        HttpPut httpPutt = new HttpPut(url);
+        httpPutt.addHeader("Content-Type", "application/json");
+        httpPutt.addHeader(SIGNATURE, signed);
+        httpPutt.addHeader(NONCE, nonce);
+        httpPutt.addHeader(ACCESS_TOKEN, accessToken);
+
+        httpPutt.setEntity(new ByteArrayEntity(requestBodyJSON.getBytes(Config.ENCODING)));
+
+        CloseableHttpClient client = buildHttpsClient();
+        CloseableHttpResponse response = client.execute(httpPutt);
 
         ResponseBody responseBody = analyzeBody(response);
         if (responseBody.fail()) {

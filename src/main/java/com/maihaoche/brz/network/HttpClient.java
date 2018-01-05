@@ -14,6 +14,8 @@ import java.security.NoSuchAlgorithmException;
 public interface HttpClient {
     DownloadFile download(String url, Object command, String accessToken) throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException;
 
+    void get(String url, String accessToken) throws IOException, KeyStoreException, NoSuchAlgorithmException, KeyManagementException;
+
     <T> T get(String url, Class<T> returnType) throws IOException, KeyStoreException, NoSuchAlgorithmException, KeyManagementException;
 
     <T> T get(String url, Object command, Class<T> returnType) throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException;
@@ -23,4 +25,6 @@ public interface HttpClient {
     <T> T get(String url, Object command, Type returnType, String accessToken) throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException;
 
     void post(String url, Object command, String accessToken) throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException;
+
+    void put(String url, Object command, String accessToken) throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException;
 }

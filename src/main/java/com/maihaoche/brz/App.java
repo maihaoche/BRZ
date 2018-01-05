@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.maihaoche.brz.cipher.DefaultCipherHelper;
 import com.maihaoche.brz.coder.DefaultJsonHelper;
+import com.maihaoche.brz.command.AlterSignerCommand;
 import com.maihaoche.brz.command.DownloadContractCommand;
 import com.maihaoche.brz.command.Order;
 import com.maihaoche.brz.command.SendMessageCommand;
@@ -41,15 +42,16 @@ public class App {
             AccessToken accessToken = requestAccessToken(Config.CORP_ID, Config.CORP_KEY);
             System.out.println(accessToken);
 
-            List<Order> orders = findOrder(accessToken.getToken(), "G20180104106309");
-            System.out.println(gson.toJson(orders));
 
-            List<String> carIds = Collections.singletonList("100571421");
-            List<Map<String, String>> waybill = findWaybill(accessToken.getToken(), carIds);
-            System.out.println(gson.toJson(waybill));
-
-            List<Map<String, String>> warehouse = findWarehouse(accessToken.getToken(), carIds);
-            System.out.println(gson.toJson(warehouse));
+//            List<Order> orders = findOrder(accessToken.getToken(), "G20180104106309");
+//            System.out.println(gson.toJson(orders));
+//
+//            List<String> carIds = Collections.singletonList("100571421");
+//            List<Map<String, String>> waybill = findWaybill(accessToken.getToken(), carIds);
+//            System.out.println(gson.toJson(waybill));
+//
+//            List<Map<String, String>> warehouse = findWarehouse(accessToken.getToken(), carIds);
+//            System.out.println(gson.toJson(warehouse));
 
 ////          例子2、放款通知卖好车
 //            notify(accessToken.getToken(), new SendMessageCommand<List<String>>(UUID.randomUUID().toString(), "lent", Collections.<String>emptyList()));
@@ -66,6 +68,11 @@ public class App {
 //            OutputStream outputStream = new FileOutputStream(downloadFile.getName());
 //            outputStream.write(downloadFile.getContent());
 //            outputStream.close();
+
+//            修改签章人
+            alterSigner(accessToken.getToken(), "重楼", "18058182593");
+
+            sendCaptcha(accessToken.getToken());
 
         } catch (Throwable e) {
             e.printStackTrace();
@@ -104,5 +111,25 @@ public class App {
         String notifyUrl = String.format("%s/v1/car/warehouse", Config.DOMAIN);
         return HTTP_CLIENT.get(notifyUrl, carIds, new TypeToken<List<Map<String, Object>>>() {
         }.getType(), accessToken);
+    }
+
+    private static void alterSigner(String accessToken, String name, String mobile) throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+        String notifyUrl = String.format("%s/v1/signer", Config.DOMAIN);
+        HTTP_CLIENT.post(notifyUrl, new AlterSignerCommand(mobile, name), accessToken);
+    }
+
+    private static void sendCaptcha(String accessToken) throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+        String notifyUrl = String.format("%s/v1/captcha", Config.DOMAIN);
+        HTTP_CLIENT.get(notifyUrl, accessToken);
+    }
+
+    private static void agree(String accessToken, String orderId) throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+        String notifyUrl = String.format("%s/v1/agree", Config.DOMAIN);
+        HTTP_CLIENT.put(notifyUrl, orderId, accessToken);
+    }
+
+    private static void reject(String accessToken, String orderId) throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+        String notifyUrl = String.format("%s/v1/reject", Config.DOMAIN);
+        HTTP_CLIENT.put(notifyUrl, orderId, accessToken);
     }
 }
