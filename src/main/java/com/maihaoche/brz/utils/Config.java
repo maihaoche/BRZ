@@ -5,7 +5,7 @@ package com.maihaoche.brz.utils;
  */
 public class Config {
 
-    public final static String DOMAIN = "https://open.haimaiche.net";
+    public final static String DOMAIN = "http://localhost:8082";
 
     /**
      * 固定值，请勿修改

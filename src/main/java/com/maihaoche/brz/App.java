@@ -1,5 +1,6 @@
 package com.maihaoche.brz;
 
+import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.maihaoche.brz.cipher.DefaultCipherHelper;
 import com.maihaoche.brz.coder.DefaultJsonHelper;
@@ -19,6 +20,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 卖好车开放平台，例子
@@ -32,13 +34,22 @@ public class App {
 
     public static void main(String[] args) throws UnsupportedEncodingException {
         try {
+            Gson gson = new Gson();
+
 
 //          例子1，获取access token
             AccessToken accessToken = requestAccessToken(Config.CORP_ID, Config.CORP_KEY);
             System.out.println(accessToken);
 
-            List<Order> order = findOrder(accessToken.getToken(), "G20180104106309");
-            System.out.println(order);
+            List<Order> orders = findOrder(accessToken.getToken(), "G20180104106309");
+            System.out.println(gson.toJson(orders));
+
+            List<String> carIds = Collections.singletonList("100571421");
+            List<Map<String, String>> waybill = findWaybill(accessToken.getToken(), carIds);
+            System.out.println(gson.toJson(waybill));
+
+            List<Map<String, String>> warehouse = findWarehouse(accessToken.getToken(), carIds);
+            System.out.println(gson.toJson(warehouse));
 
 ////          例子2、放款通知卖好车
 //            notify(accessToken.getToken(), new SendMessageCommand<List<String>>(UUID.randomUUID().toString(), "lent", Collections.<String>emptyList()));
@@ -56,23 +67,16 @@ public class App {
 //            outputStream.write(downloadFile.getContent());
 //            outputStream.close();
 
-// TOD保存到本地/CDN
         } catch (Throwable e) {
             e.printStackTrace();
         }
     }
 
-    //
     private static AccessToken requestAccessToken(String corpId, String corpKey) throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         String requestAccessTokenUrl = String.format("%s/v1/corp/token?id=%s&key=%s", Config.DOMAIN, corpId, corpKey);
         AccessToken accessToken = HTTP_CLIENT.get(requestAccessTokenUrl, AccessToken.class);
         return accessToken;
     }
-
-//    private static void notify(String accessToken, SendMessageCommand<List<String>> command) throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
-//        String notifyUrl = String.format("%s/v1/message", Config.DOMAIN);
-//        HTTP_CLIENT.post(notifyUrl, new Sen, accessToken);
-//    }
 
     private static void notify(String accessToken, SendMessageCommand<?> command) throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         String notifyUrl = String.format("%s/v1/message", Config.DOMAIN);
@@ -87,6 +91,18 @@ public class App {
     private static List<Order> findOrder(String accessToken, String orderNo) throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         String notifyUrl = String.format("%s/v1/orders", Config.DOMAIN);
         return HTTP_CLIENT.get(notifyUrl, Collections.singletonList(orderNo), new TypeToken<List<Order>>() {
+        }.getType(), accessToken);
+    }
+
+    private static List<Map<String, String>> findWaybill(String accessToken, List<String> carIds) throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+        String notifyUrl = String.format("%s/v1/car/waybill", Config.DOMAIN);
+        return HTTP_CLIENT.get(notifyUrl, carIds, new TypeToken<List<Map<String, Object>>>() {
+        }.getType(), accessToken);
+    }
+
+    private static List<Map<String, String>> findWarehouse(String accessToken, List<String> carIds) throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+        String notifyUrl = String.format("%s/v1/car/warehouse", Config.DOMAIN);
+        return HTTP_CLIENT.get(notifyUrl, carIds, new TypeToken<List<Map<String, Object>>>() {
         }.getType(), accessToken);
     }
 }

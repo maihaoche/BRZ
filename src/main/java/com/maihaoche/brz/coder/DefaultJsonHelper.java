@@ -1,8 +1,6 @@
 package com.maihaoche.brz.coder;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.LongSerializationPolicy;
 
 import java.lang.reflect.Type;
 
@@ -14,11 +12,11 @@ public class DefaultJsonHelper implements JsonHelper {
     private final Gson gson;
 
     public DefaultJsonHelper() {
-        GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.setLongSerializationPolicy(LongSerializationPolicy.STRING)
-                .setDateFormat("yyyy-MM-dd HH:mm")
-                .serializeNulls();
-        this.gson = gsonBuilder.create();
+//        GsonBuilder gsonBuilder = new GsonBuilder();
+//        gsonBuilder.setLongSerializationPolicy(LongSerializationPolicy.STRING)
+//                .setDateFormat("yyyy-MM-dd HH:mm")
+//                .serializeNulls();
+        this.gson = new Gson();//gsonBuilder.create();
     }
 
     public <T> String toJson(T o) {

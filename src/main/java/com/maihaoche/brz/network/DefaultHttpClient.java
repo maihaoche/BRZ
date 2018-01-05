@@ -132,7 +132,6 @@ public class DefaultHttpClient implements HttpClient {
         return jsonHelper.fromJson(new String(pt, Config.ENCODING), returnType);
     }
 
-
     private HttpResponse get(String url, Object command, String accessToken) throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         String ciphertext = encrypt(command);
 
