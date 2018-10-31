@@ -40,7 +40,7 @@ public class App {
             System.out.println(accessToken);
 
 
-            List<Carrier> orders = findCarrier(accessToken.getToken(), new QueryCarrierCommand(null, "测试"));
+            List<Formalities> orders = findFormalities(accessToken.getToken(), new QueryFormalitiesCommand("", 509523L));
             System.out.println(gson.toJson(orders));
 
 //            for (Contract contract : orders.get(0).getContract()) {
@@ -109,6 +109,12 @@ public class App {
     private static List<Carrier> findCarrier(String accessToken, QueryCarrierCommand command) throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         String notifyUrl = String.format("%s/v1/carriers", Config.DOMAIN);
         return HTTP_CLIENT.get(notifyUrl, command, new TypeToken<List<Carrier>>() {
+        }.getType(), accessToken);
+    }
+
+    private static List<Formalities> findFormalities(String accessToken, QueryFormalitiesCommand command) throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+        String notifyUrl = String.format("%s/v2/car/formalities", Config.DOMAIN);
+        return HTTP_CLIENT.get(notifyUrl, command, new TypeToken<List<Formalities>>() {
         }.getType(), accessToken);
     }
 
