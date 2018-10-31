@@ -13,7 +13,6 @@ import com.maihaoche.brz.utils.Config;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -41,13 +40,13 @@ public class App {
             System.out.println(accessToken);
 
 
-            List<Order> orders = findOrder(accessToken.getToken(), "G20180104106309");
+            List<Carrier> orders = findCarrier(accessToken.getToken(), new QueryCarrierCommand(null, "测试"));
             System.out.println(gson.toJson(orders));
 
-            for (Contract contract : orders.get(0).getContract()) {
-                Map<String, String> uris = findContractUri(accessToken.getToken(), contract.getId(), contract.getMime());
-                System.out.println(URLDecoder.decode(uris.get("uri"), "UTF-8"));
-            }
+//            for (Contract contract : orders.get(0).getContract()) {
+//                Map<String, String> uris = findContractUri(accessToken.getToken(), contract.getId(), contract.getMime());
+//                System.out.println(URLDecoder.decode(uris.get("uri"), "UTF-8"));
+//            }
 
 //
 //            List<String> carIds = Collections.singletonList("100571421");
@@ -103,6 +102,13 @@ public class App {
     private static List<Order> findOrder(String accessToken, String orderNo) throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         String notifyUrl = String.format("%s/v1/orders", Config.DOMAIN);
         return HTTP_CLIENT.get(notifyUrl, Collections.singletonList(orderNo), new TypeToken<List<Order>>() {
+        }.getType(), accessToken);
+    }
+
+
+    private static List<Carrier> findCarrier(String accessToken, QueryCarrierCommand command) throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+        String notifyUrl = String.format("%s/v1/carriers", Config.DOMAIN);
+        return HTTP_CLIENT.get(notifyUrl, command, new TypeToken<List<Carrier>>() {
         }.getType(), accessToken);
     }
 
