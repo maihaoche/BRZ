@@ -40,7 +40,7 @@ public class App {
             System.out.println(accessToken);
 
 
-            List<Formalities> orders = findFormalities(accessToken.getToken(), new QueryFormalitiesCommand("", 509523L));
+            Location orders = findLocation(accessToken.getToken(), new QueryFormalitiesCommand("G20180822131151", 509523L));
             System.out.println(gson.toJson(orders));
 
 //            for (Contract contract : orders.get(0).getContract()) {
@@ -116,6 +116,11 @@ public class App {
         String notifyUrl = String.format("%s/v2/car/formalities", Config.DOMAIN);
         return HTTP_CLIENT.get(notifyUrl, command, new TypeToken<List<Formalities>>() {
         }.getType(), accessToken);
+    }
+
+    private static Location findLocation(String accessToken, QueryFormalitiesCommand command) throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+        String notifyUrl = String.format("%s//v1/car/transport", Config.DOMAIN);
+        return HTTP_CLIENT.get(notifyUrl, command, Location.class, accessToken);
     }
 
     private static List<Map<String, String>> findWaybill(String accessToken, List<String> carIds) throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
