@@ -39,9 +39,15 @@ public class App {
             AccessToken accessToken = requestAccessToken(Config.CORP_ID, Config.CORP_KEY);
             System.out.println(accessToken);
 
+            List<Carrier> carriers = findCarrier(accessToken.getToken(), new QueryCarrierCommand(null, "测试"));
+            System.out.println(gson.toJson(carriers));
 
             Location orders = findLocation(accessToken.getToken(), new QueryFormalitiesCommand("G20180822131151", 509523L));
             System.out.println(gson.toJson(orders));
+
+            List formalities = findFormalities(accessToken.getToken(), new QueryFormalitiesCommand("G20180822131151", 509523L));
+            System.out.println(gson.toJson(formalities));
+
 
 //            for (Contract contract : orders.get(0).getContract()) {
 //                Map<String, String> uris = findContractUri(accessToken.getToken(), contract.getId(), contract.getMime());
