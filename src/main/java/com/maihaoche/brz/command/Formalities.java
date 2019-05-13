@@ -10,78 +10,49 @@ import java.io.Serializable;import java.lang.String;
  */
 public class Formalities implements Serializable{
 
-    /**
-     * 车辆钥匙存放地点
-     */
-    private String storeAddress;
-
-    /**
-     * 钥匙数量
-     */
-    private int keys;
-
-    /**
-     * 关单
-     */
-    private String cargoDeclaration;
-
-    /**
-     * 合格证
-     */
-    private String certificate;
-
-    /**
-     * 车辆一致性证书
-     */
-    private String vehicleConsistencyCertificate;
-
-    /**
-     * 商检单
-     */
-    private String checklist;
-
-    /**
-     * 车购税表
-     */
-    private String purchaseTaxList;
-
-    /**
-     * 发票
-     */
+    //存放地点
+    private String location="";
+    //钥匙
+    private String keys="";
+    //关单 有/无
+    private String customsDeclaration="";
+    //合格证 有/无
+    private String certificate="";
+    //一致性证书 有/无
+    private String consistencyCertificate = "";
+    //商检单 有/无
+    private String inspectionSheet = "";
+    //车购税表 有/无
+    private String taxTable = "";
+    //发票 有/无
     private String invoice;
-
-    /**
-     * 安检报告
-     */
-    private String securityReport;
-
-    /**
-     * 说明书
-     */
+    //安检报告 有/无
+    private String securityInspectionReport;
+    //说明书 有/无
     private String instruction;
 
-    public String getStoreAddress() {
-        return storeAddress;
+    public String getLocation() {
+        return location;
     }
 
-    public void setStoreAddress(String storeAddress) {
-        this.storeAddress = storeAddress;
+    public void setLocation(String location) {
+        this.location = location;
     }
 
-    public int getKeys() {
+    public String getKeys() {
         return keys;
     }
 
-    public void setKeys(int keys) {
+    public void setKeys(String keys) {
         this.keys = keys;
     }
 
-    public String getCargoDeclaration() {
-        return cargoDeclaration;
+    public String getCustomsDeclaration() {
+        return customsDeclaration;
     }
 
-    public void setCargoDeclaration(String cargoDeclaration) {
-        this.cargoDeclaration = cargoDeclaration;
+    public void setCustomsDeclaration(String customsDeclaration) {
+        this.customsDeclaration = customsDeclaration;
     }
 
     public String getCertificate() {
@@ -92,28 +63,28 @@ public class Formalities implements Serializable{
         this.certificate = certificate;
     }
 
-    public String getVehicleConsistencyCertificate() {
-        return vehicleConsistencyCertificate;
+    public String getConsistencyCertificate() {
+        return consistencyCertificate;
     }
 
-    public void setVehicleConsistencyCertificate(String vehicleConsistencyCertificate) {
-        this.vehicleConsistencyCertificate = vehicleConsistencyCertificate;
+    public void setConsistencyCertificate(String consistencyCertificate) {
+        this.consistencyCertificate = consistencyCertificate;
     }
 
-    public String getChecklist() {
-        return checklist;
+    public String getInspectionSheet() {
+        return inspectionSheet;
     }
 
-    public void setChecklist(String checklist) {
-        this.checklist = checklist;
+    public void setInspectionSheet(String inspectionSheet) {
+        this.inspectionSheet = inspectionSheet;
     }
 
-    public String getPurchaseTaxList() {
-        return purchaseTaxList;
+    public String getTaxTable() {
+        return taxTable;
     }
 
-    public void setPurchaseTaxList(String purchaseTaxList) {
-        this.purchaseTaxList = purchaseTaxList;
+    public void setTaxTable(String taxTable) {
+        this.taxTable = taxTable;
     }
 
     public String getInvoice() {
@@ -124,12 +95,12 @@ public class Formalities implements Serializable{
         this.invoice = invoice;
     }
 
-    public String getSecurityReport() {
-        return securityReport;
+    public String getSecurityInspectionReport() {
+        return securityInspectionReport;
     }
 
-    public void setSecurityReport(String securityReport) {
-        this.securityReport = securityReport;
+    public void setSecurityInspectionReport(String securityInspectionReport) {
+        this.securityInspectionReport = securityInspectionReport;
     }
 
     public String getInstruction() {
